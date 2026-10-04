@@ -403,11 +403,114 @@
   .wheel-result .label{ color: var(--muted); font-size: 13px; }
   .wheel-result .value{ font-size: 19px; font-weight: 800; color: var(--lime); }
 
+  /* ---------- header excuse button ---------- */
+  .topbar-end{ display:flex; align-items:center; gap: 12px; }
+  .excuse-chip{
+    background: rgba(255,183,46,.1);
+    border: 1px solid rgba(255,183,46,.5);
+    color: #FFB72E;
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .excuse-chip:hover{ background: rgba(255,183,46,.18); }
+
+  /* ---------- pass: nav links + roles ---------- */
+  .nav-links{ display:flex; gap: 8px; margin-top: 10px; }
+  .nav-link{
+    flex: 1;
+    display:flex; align-items:center; justify-content:center; gap: 6px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    font-size: 14px; font-weight: 700;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    color: var(--text);
+    background: var(--surface-2);
+  }
+  .nav-link.waze{ border-color: rgba(51,204,255,.5); color: #33CCFF; }
+  .nav-link.gmaps{ border-color: rgba(198,255,61,.4); color: var(--lime); }
+  .roles{ display:grid; gap: 6px; margin-top: 4px; }
+  .role{
+    display:flex; justify-content:space-between; align-items:center; gap: 10px;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 15px;
+  }
+  .role-who{ color: var(--muted); font-size: 13px; }
+  .role-what{ font-weight: 800; }
+  .label-row{ display:flex; justify-content:space-between; align-items:center; }
+  .mini-btn{
+    background: none; border: none; color: var(--cyan);
+    font-size: 13px; font-weight: 700; cursor: pointer; padding: 2px 4px;
+  }
+
+  /* ---------- fun panels (coin toss, excuses) ---------- */
+  .panel{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 22px;
+  }
+  .coin-row{ display:flex; align-items:center; gap: 16px; }
+  .coin{
+    flex: 0 0 auto;
+    width: 76px; height: 76px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #FFE79A, #E0A82E 55%, #9C6B10);
+    border: 3px solid #FFD46B;
+    box-shadow: 0 0 22px rgba(255,183,46,.35), inset 0 -4px 0 rgba(0,0,0,.25);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 34px;
+    cursor: pointer;
+  }
+  .coin.flipping{ animation: coinFlip 1.3s cubic-bezier(.3,.7,.3,1); }
+  @keyframes coinFlip{
+    0%{ transform: translateY(0) rotateX(0); }
+    45%{ transform: translateY(-56px) rotateX(1080deg); }
+    100%{ transform: translateY(0) rotateX(2160deg); }
+  }
+  .coin-side{ flex: 1; min-width: 0; }
+  .coin-result{ margin: 6px 0 0; font-size: 20px; font-weight: 800; color: #FFB72E; min-height: 30px; }
+  .coin-side .btn{ padding: 10px 14px; font-size: 15px; }
+
+  .btn-excuse{
+    background: rgba(255,183,46,.12);
+    color: #FFB72E;
+    border: 1px solid rgba(255,183,46,.55);
+  }
+  .excuse-quote{
+    position: relative;
+    background: var(--surface-2);
+    border: 1px solid rgba(255,183,46,.5);
+    border-radius: 16px;
+    padding: 22px 18px;
+    margin: 16px 0 14px;
+    font-size: 21px; font-weight: 800;
+    line-height: 1.4;
+    min-height: 96px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .excuse-quote::before{
+    content: "”";
+    position:absolute; top: -6px; right: 12px;
+    font-family: Georgia, serif; font-size: 54px; color: #FFB72E; line-height: 1;
+  }
+  .excuse-quote.pop{ animation: pop .3s ease-out; }
+  @keyframes pop{ from{ transform: scale(.92); opacity: .4; } to{ transform: none; opacity: 1; } }
+  .excuse-by{ color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .btn-row{ display:flex; gap: 10px; }
+  .btn-row .btn{ flex: 1; padding: 13px 12px; font-size: 15px; }
+
   #confetti{ position: fixed; inset: 0; pointer-events: none; z-index: 100; }
 
   @media (prefers-reduced-motion: reduce){
     .step.active{ animation: none; }
     .wheel{ transition-duration: .8s; }
+    .coin.flipping, .excuse-quote.pop{ animation: none; }
   }
 </style>
 </head>
@@ -416,7 +519,10 @@
 <main class="app">
   <header class="topbar">
     <div class="logo"><span class="logo-dot"></span>ישיבה עם החבר'ה</div>
-    <div class="progress" id="progress" aria-hidden="true"></div>
+    <div class="topbar-end">
+      <div class="progress" id="progress" aria-hidden="true"></div>
+      <button class="excuse-chip" id="excuseHeaderBtn" type="button">תירוצי שולי 🤦‍♂️</button>
+    </div>
   </header>
 
   <!-- welcome -->
@@ -497,12 +603,34 @@
         <div class="pass-field full">
           <span class="pass-label">📍 מה עושים</span>
           <span class="pass-value big" id="sumActivity">—</span>
+          <div class="nav-links" id="navLinks" hidden>
+            <a class="nav-link waze" id="wazeLink" href="#" target="_blank" rel="noopener">🚙 Waze</a>
+            <a class="nav-link gmaps" id="gmapsLink" href="#" target="_blank" rel="noopener">📍 Google Maps</a>
+          </div>
+        </div>
+        <div class="pass-field full">
+          <div class="label-row">
+            <span class="pass-label">🦹‍♂️ חלוקת תפקידים</span>
+            <button class="mini-btn" id="shuffleRolesBtn" type="button">🔀 לערבב</button>
+          </div>
+          <div class="roles" id="roles"></div>
         </div>
       </div>
       <span class="pass-stamp" id="passStamp" hidden>📵 NO PHONES</span>
     </div>
 
     <p class="countdown" id="countdown"></p>
+
+    <p class="section-label">מי משלם על הסיבוב הראשון? 🪙🍺</p>
+    <div class="panel">
+      <div class="coin-row">
+        <button class="coin" id="coin" type="button" aria-label="הטל מטבע">🪙</button>
+        <div class="coin-side">
+          <button class="btn btn-primary" id="coinBtn" type="button">הטל מטבע 🪙</button>
+          <p class="coin-result" id="coinResult" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
 
     <p class="section-label">כרטיס גירוד 🎰 תגרד ותגלה מה זכית</p>
     <div class="scratch">
@@ -519,6 +647,7 @@
     </label>
 
     <div class="stack">
+      <button class="btn btn-excuse" id="excuseSummaryBtn" type="button">מחולל תירוצי שולי 🤦‍♂️</button>
       <a class="btn btn-wa" id="waBtn" href="#" target="_blank" rel="noopener">
         <svg viewBox="0 0 448 512" aria-hidden="true"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-221.9 99.5-221.9 221.9 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.5 224.1-221.9 0-59.3-23.1-115-64.1-157.1zM223.9 438.7h-.1c-33.2 0-65.7-8.9-94-25.8l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.6-29.6-28.4-63.7-28.4-98.7 0-102.2 83.2-185.4 185.5-185.4 49.6 0 96.2 19.3 131.3 54.5 35.1 35.1 54.4 81.8 54.4 131.4 0 102.3-83.3 185.7-185.5 185.7zm101.5-138.9c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.5 21.7-3.2 3.7-6.5 4.1-12 1.4-5.5-2.8-23.2-8.6-44.2-27.3-16.3-14.6-27.3-32.6-30.5-38.1-3.2-5.6-.3-8.6 2.4-11.4 2.5-2.5 5.6-6.5 8.4-9.7 2.8-3.2 3.7-5.6 5.6-9.3 1.9-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2s-9.7 1.4-14.8 6.9c-5.1 5.6-19.4 19-19.4 46.3s19.9 53.7 22.7 57.4c2.8 3.7 39.1 59.7 94.8 83.7 13.2 5.7 23.5 9.1 31.6 11.7 13.3 4.2 25.4 3.6 35 2.2 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
         <span>שולחים לחבר'ה בוואטסאפ</span>
@@ -535,6 +664,21 @@
     <button class="btn btn-primary" id="nextBtn" type="button" disabled>הבא ←</button>
   </div>
 </nav>
+
+<!-- Shuli's excuses generator -->
+<div class="modal" id="excuseModal" role="dialog" aria-modal="true" aria-labelledby="excuseTitle" hidden>
+  <div class="modal-card">
+    <button class="modal-close" id="excuseClose" type="button" aria-label="סגירה">✕</button>
+    <h2 id="excuseTitle">מחולל תירוצי שולי 🤦‍♂️</h2>
+    <p class="sub" style="margin:0">תירוצים מקוריים, נבדקו בשטח שנים</p>
+    <div class="excuse-quote" id="excuseText" aria-live="polite"></div>
+    <p class="excuse-by">— שולי, כמעט בכל ישיבה</p>
+    <div class="btn-row">
+      <button class="btn btn-excuse" id="excuseNext" type="button">עוד תירוץ 🎲</button>
+      <button class="btn btn-primary" id="excuseCopy" type="button">העתק תירוץ 📋</button>
+    </div>
+  </div>
+</div>
 
 <!-- wheel of fortune -->
 <div class="modal" id="wheelModal" role="dialog" aria-modal="true" aria-labelledby="wheelTitle" hidden>
@@ -572,14 +716,15 @@
   var VIBES = [
     { id:"bar", label:"יוצאים לבר", emoji:"🍺", color:"#C6FF3D",
       title:"לאיזה בר נוחתים? 🍻", text:"תבחר אזור, הבירה כבר מחכה.",
-      options:[["סלון ברלין","🍻"], ["נחלת בנימין / רוטשילד","🍸"], ["פלורנטין","🍺"], ["ברנרד","🍻"], ["שרונה","🍷"]] },
+      // optional 3rd item = navigation search query (adds Waze / Google Maps links)
+      options:[["סלון ברלין","🍻","סלון ברלין, תל אביב"], ["נחלת בנימין / רוטשילד","🍸","שדרות רוטשילד, תל אביב"], ["פלורנטין","🍺","פלורנטין, תל אביב"], ["ברנרד","🍻"], ["שרונה","🍷","שרונה מרקט, תל אביב"]] },
     { id:"cinema", label:"סרט בקולנוע", emoji:"🍿", color:"#FF2E88", options:null },
     { id:"food", label:"לאכול משהו טוב בחוץ", emoji:"🍔", color:"#2EE6FF",
       title:"מה אוכלים? 🍔", text:"בטן מלאה, ישיבה שמחה.",
       options:[["פיצה","🍕"], ["שווארמה","🌯"], ["המבורגר","🍔"], ["תאילנדי","🇹🇭"], ["סושי","🍣"], ["מסעדת בשרים","🥩"]] },
     { id:"tlv", label:"סיבוב בתל אביב", emoji:"🏙️", color:"#9B5CFF",
       title:"לאן מתגלגלים? 🏙️", text:"סיבוב בעיר, בלי לחץ.",
-      options:[["דיזנגוף","🏙️"], ["פלורנטין","🎨"], ["הטיילת והים","🌊"]] },
+      options:[["דיזנגוף","🏙️","רחוב דיזנגוף, תל אביב"], ["פלורנטין","🎨","פלורנטין, תל אביב"], ["הטיילת והים","🌊"]] },
     { id:"cafe", label:"בית קפה", emoji:"☕", color:"#FFB72E",
       title:"איזה סוג ישיבה? ☕", text:"פרודוקטיביות או חפירות?",
       options:[["עבודה / ישיבה עם לפטופ","💻"], ["בלי לפטופ - רק קפה ודיבורים","☕"]] },
@@ -601,8 +746,37 @@
     "זכית! איתי מקפיץ אותך הביתה 🚗"
   ];
 
+  var EXCUSES = [
+    "סבתא שלי מתה... 👵💔",
+    "הכלבה של אחותי מתה... 🐕",
+    "אני חולה, נראה לי יש לי קורונה 😷",
+    "אני בכפר הנופש, לא יכול להגיע 🏖️",
+    "אני בדיוק מנגן בפסנתר, באמצע קטע קלאסי 🎹",
+    "לא יכול לבוא, יש לי משכנתא לשלם 💸",
+    "אתה יודע איזה פקקים מטורפים זה עכשיו מכפר סבא?! 🚗🚚"
+  ];
+
+  var COIN_RESULTS = [
+    { face:"🍺", text:"איתי משלם! 🍺" },
+    { face:"💳", text:"אתה משלם! 💳" },
+    { face:"🤝", text:"חצי-חצי 🤝" }
+  ];
+
+  var ROLES = ["ה-DJ הרשמי 🎧", "אחראי נשנושים 🍕", "הנהג התורן 🚗", "ה-Carry בפורטנייט 🎮"];
+  var ROLE_HOLDERS = ["איתי", "אתה"];
+
   // ---------- state ----------
   var state = { date:"", time:"", vibe:"", sub:-1, noPhones:false };
+  var coinResult = null; // index into COIN_RESULTS once flipped
+  var roles = [];        // one ROLES entry per ROLE_HOLDERS entry
+
+  function pickRandom(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // the chosen spot's navigation query, if it has one
+  function navQuery(){
+    var v = vibeById(state.vibe);
+    return (v && v.options && state.sub >= 0 && v.options[state.sub][2]) || "";
+  }
   var current = "welcome";
 
   function vibeById(id){
@@ -981,6 +1155,15 @@
     $("sumActivity").textContent = activityText();
     $("passCode").textContent = "BRO-" + state.date.slice(5).replace("-", "") + state.time.replace(":", "");
     $("passStamp").hidden = !state.noPhones;
+
+    var q = navQuery();
+    $("navLinks").hidden = !q;
+    if(q){
+      $("wazeLink").href = "https://waze.com/ul?q=" + encodeURIComponent(q) + "&navigate=yes";
+      $("gmapsLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+    }
+
+    if(!roles.length) shuffleRoles(); else renderRoles();
     // the card has to be visible before its canvas can be sized
     window.requestAnimationFrame(initScratch);
     updateWhatsApp();
@@ -1018,6 +1201,12 @@
       "📍 מה עושים: " + activityText()
     ];
     if(state.noPhones) lines.push("📵 בלי מסכים: הטלפונים בכיס כל הישיבה");
+    var q = navQuery();
+    if(q) lines.push("🚙 ניווט: https://waze.com/ul?q=" + encodeURIComponent(q) + "&navigate=yes");
+    if(roles.length){
+      lines.push("🦹‍♂️ תפקידים: " + ROLE_HOLDERS.map(function(who, i){ return who + " – " + roles[i]; }).join(" | "));
+    }
+    if(coinResult !== null) lines.push("🪙 הסיבוב הראשון: " + COIN_RESULTS[coinResult].text);
     if(revealed) lines.push("🎰 מכרטיס הגירוד: " + prize);
     lines.push("", "נתראה שם! 🚀");
     return lines.join("\n");
@@ -1026,9 +1215,130 @@
     $("waBtn").href = "https://wa.me/" + WHATSAPP_PHONE + "?text=" + encodeURIComponent(buildMessage());
   }
 
+  // ---------- bro roles ----------
+  function renderRoles(){
+    var box = $("roles");
+    box.innerHTML = "";
+    ROLE_HOLDERS.forEach(function(who, i){
+      var row = document.createElement("div");
+      row.className = "role";
+      var w = document.createElement("span");
+      w.className = "role-who"; w.textContent = who;
+      var r = document.createElement("span");
+      r.className = "role-what"; r.textContent = roles[i];
+      row.appendChild(r); row.appendChild(w);
+      box.appendChild(row);
+    });
+  }
+  function shuffleRoles(){
+    var pool = ROLES.slice();
+    for(var i = pool.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+    }
+    roles = pool.slice(0, ROLE_HOLDERS.length);
+    renderRoles();
+    updateWhatsApp();
+  }
+  $("shuffleRolesBtn").addEventListener("click", shuffleRoles);
+
+  // ---------- coin toss ----------
+  var coin = $("coin"), coinBtn = $("coinBtn"), flipping = false;
+  function flipCoin(){
+    if(flipping) return;
+    flipping = true;
+    coinBtn.disabled = true;
+    $("coinResult").textContent = "";
+    coin.textContent = "🪙";
+    coin.classList.remove("flipping");
+    void coin.offsetWidth; // restart the animation on repeat flips
+    coin.classList.add("flipping");
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.setTimeout(function(){
+      coinResult = Math.floor(Math.random() * COIN_RESULTS.length);
+      coin.textContent = COIN_RESULTS[coinResult].face;
+      $("coinResult").textContent = COIN_RESULTS[coinResult].text;
+      coinBtn.textContent = "עוד פעם 🪙";
+      coinBtn.disabled = false;
+      flipping = false;
+      tone(988, "square", 0, 0.12, 0.05);
+      tone(1318, "square", 0.1, 0.2, 0.05);
+      updateWhatsApp();
+    }, reduce ? 200 : 1300);
+  }
+  coin.addEventListener("click", flipCoin);
+  coinBtn.addEventListener("click", flipCoin);
+
+  function resetCoin(){
+    coinResult = null;
+    coin.textContent = "🪙";
+    $("coinResult").textContent = "";
+    coinBtn.textContent = "הטל מטבע 🪙";
+  }
+
+  // ---------- Shuli's excuses generator ----------
+  var excuseModal = $("excuseModal"), excuseText = $("excuseText"), excuseCopy = $("excuseCopy");
+  var lastExcuse = -1;
+
+  function nextExcuse(){
+    var i;
+    do{ i = Math.floor(Math.random() * EXCUSES.length); } while(i === lastExcuse);
+    lastExcuse = i;
+    excuseText.textContent = EXCUSES[i];
+    excuseText.classList.remove("pop");
+    void excuseText.offsetWidth;
+    excuseText.classList.add("pop");
+    excuseCopy.textContent = "העתק תירוץ 📋";
+  }
+  function openExcuses(){
+    nextExcuse();
+    excuseModal.hidden = false;
+    document.body.classList.add("modal-open");
+    $("excuseNext").focus();
+  }
+  function closeExcuses(){
+    excuseModal.hidden = true;
+    document.body.classList.remove("modal-open");
+  }
+
+  function copyText(text){
+    if(navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(text);
+    }
+    // fallback for file:// and older browsers
+    return new Promise(function(resolve, reject){
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try{ ok = document.execCommand("copy"); }catch(err){ /* handled below */ }
+      document.body.removeChild(ta);
+      ok ? resolve() : reject();
+    });
+  }
+
+  excuseCopy.addEventListener("click", function(){
+    copyText(excuseText.textContent).then(function(){
+      excuseCopy.textContent = "הועתק! ✓ תדביק בוואטסאפ";
+    }, function(){
+      excuseCopy.textContent = "לא הצליח, תעתיק ידנית";
+    });
+  });
+  $("excuseNext").addEventListener("click", nextExcuse);
+  $("excuseHeaderBtn").addEventListener("click", openExcuses);
+  $("excuseSummaryBtn").addEventListener("click", openExcuses);
+  $("excuseClose").addEventListener("click", closeExcuses);
+  excuseModal.addEventListener("click", function(e){ if(e.target === excuseModal) closeExcuses(); });
+  excuseModal.addEventListener("keydown", function(e){ if(e.key === "Escape") closeExcuses(); });
+
   $("editBtn").addEventListener("click", function(){ goTo("vibe", true); });
   $("restartBtn").addEventListener("click", function(){
     state = { date:"", time:"", vibe:"", sub:-1, noPhones:false };
+    roles = [];
+    resetCoin();
     dateInput.value = ""; timeInput.value = "";
     $("noPhones").checked = false;
     onWhenChange();
