@@ -142,6 +142,7 @@
   }
   .btn:active:not(:disabled){ transform: scale(.98); }
   .btn:disabled{ opacity: .35; cursor: not-allowed; }
+  .btn[aria-disabled="true"]{ opacity: .35; pointer-events: none; }
   .btn-primary{
     background: var(--lime); color: #0A0A10;
     box-shadow: 0 0 0 1px rgba(198,255,61,.4), 0 8px 30px rgba(198,255,61,.25);
@@ -403,8 +404,9 @@
   .wheel-result .label{ color: var(--muted); font-size: 13px; }
   .wheel-result .value{ font-size: 19px; font-weight: 800; color: var(--lime); }
 
-  /* ---------- header excuse button ---------- */
-  .topbar-end{ display:flex; align-items:center; gap: 12px; }
+  /* ---------- header action chips ---------- */
+  .topbar{ margin-bottom: 12px; }
+  .header-actions{ display:flex; flex-wrap:wrap; gap: 8px; margin-bottom: 22px; }
   .excuse-chip{
     background: rgba(255,183,46,.1);
     border: 1px solid rgba(255,183,46,.5);
@@ -416,6 +418,66 @@
     white-space: nowrap;
   }
   .excuse-chip:hover{ background: rgba(255,183,46,.18); }
+  .alert-chip{ background: rgba(255,59,59,.1); border-color: rgba(255,59,59,.55); color: #FF5A5A; }
+  .alert-chip:hover{ background: rgba(255,59,59,.18); }
+
+  /* ---------- missing bro alert ---------- */
+  .siren{ font-size: 54px; line-height: 1; margin: 4px 0 8px; display:inline-block; animation: siren .9s ease-in-out infinite alternate; }
+  @keyframes siren{ from{ filter: drop-shadow(0 0 4px #FF3B3B); transform: rotate(-8deg); } to{ filter: drop-shadow(0 0 18px #2E7BFF); transform: rotate(8deg); } }
+  .missing-tease{
+    background: var(--surface-2);
+    border: 1px solid rgba(255,59,59,.5);
+    border-radius: 16px;
+    padding: 16px;
+    margin: 14px 0;
+    font-size: 18px; font-weight: 800;
+    min-height: 64px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- achievement badge ---------- */
+  .badge-row{
+    display:flex; align-items:center; gap: 12px;
+    margin: 0 20px 18px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: linear-gradient(110deg, rgba(255,183,46,.16), rgba(255,183,46,.04));
+    border: 1px solid rgba(255,183,46,.45);
+  }
+  .badge-medal{ font-size: 30px; line-height: 1; }
+  .badge-label{ display:block; font-size: 12px; color: #FFB72E; letter-spacing: .04em; }
+  .badge-name{ display:block; font-size: 17px; font-weight: 800; }
+
+  /* ---------- bill splitter ---------- */
+  .split-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .split-grid .field{ margin: 0; padding: 10px 12px; }
+  .stepper{ display:flex; align-items:center; gap: 6px; }
+  .stepper button{
+    width: 36px; height: 40px; flex: 0 0 auto;
+    border-radius: 10px; border: 1px solid var(--line);
+    background: var(--surface-2); color: var(--text);
+    font-size: 18px; font-weight: 800; cursor: pointer;
+  }
+  .stepper input{ text-align: center; padding-inline: 4px; }
+  .split-total{
+    text-align:center;
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 12px;
+    margin: 12px 0;
+  }
+  .split-total .label{ color: var(--muted); font-size: 13px; display:block; }
+  .split-total .amount{ font-size: 30px; font-weight: 800; color: var(--lime); font-variant-numeric: tabular-nums; }
+  .split-text{
+    white-space: pre-line;
+    background: var(--bg);
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
 
   /* ---------- pass: nav links + roles ---------- */
   .nav-links{ display:flex; gap: 8px; margin-top: 10px; }
@@ -519,11 +581,12 @@
 <main class="app">
   <header class="topbar">
     <div class="logo"><span class="logo-dot"></span>ישיבה עם החבר'ה</div>
-    <div class="topbar-end">
-      <div class="progress" id="progress" aria-hidden="true"></div>
-      <button class="excuse-chip" id="excuseHeaderBtn" type="button">תירוצי שולי 🤦‍♂️</button>
-    </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
   </header>
+  <div class="header-actions">
+    <button class="excuse-chip" id="excuseHeaderBtn" type="button">מחולל תירוצי שולי 🤦‍♂️</button>
+    <button class="excuse-chip alert-chip" id="missingHeaderBtn" type="button">דיווח על חבר שנעלם 🚨</button>
+  </div>
 
   <!-- welcome -->
   <section class="step" data-step="welcome">
@@ -616,6 +679,13 @@
           <div class="roles" id="roles"></div>
         </div>
       </div>
+      <div class="badge-row">
+        <span class="badge-medal" aria-hidden="true">🏆</span>
+        <span>
+          <span class="badge-label">הישג נפתח!</span>
+          <span class="badge-name" id="badgeName"></span>
+        </span>
+      </div>
       <span class="pass-stamp" id="passStamp" hidden>📵 NO PHONES</span>
     </div>
 
@@ -629,6 +699,35 @@
           <button class="btn btn-primary" id="coinBtn" type="button">הטל מטבע 🪙</button>
           <p class="coin-result" id="coinResult" aria-live="polite"></p>
         </div>
+      </div>
+    </div>
+
+    <p class="section-label">מחשבון חשבון וטיפ 🧮💸</p>
+    <div class="panel">
+      <div class="split-grid">
+        <div class="field">
+          <label class="field-label" for="billInput">סה"כ חשבון (₪)</label>
+          <input type="number" id="billInput" inputmode="decimal" min="0" step="1" placeholder="0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="brosInput">כמה אחים?</label>
+          <div class="stepper">
+            <button type="button" id="brosMinus" aria-label="פחות">−</button>
+            <input type="number" id="brosInput" inputmode="numeric" min="1" value="4">
+            <button type="button" id="brosPlus" aria-label="יותר">+</button>
+          </div>
+        </div>
+      </div>
+      <span class="field-label">טיפ</span>
+      <div class="chips" id="tipChips"></div>
+      <div class="split-total">
+        <span class="label">כל אחד מעביר</span>
+        <span class="amount" id="splitAmount">₪0</span>
+      </div>
+      <p class="split-text" id="splitText"></p>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="splitCopy" type="button" disabled>העתק 📋</button>
+        <a class="btn btn-wa" id="splitWa" href="#" target="_blank" rel="noopener" aria-disabled="true">שלח לקבוצה 💸</a>
       </div>
     </div>
 
@@ -664,6 +763,21 @@
     <button class="btn btn-primary" id="nextBtn" type="button" disabled>הבא ←</button>
   </div>
 </nav>
+
+<!-- missing bro alert -->
+<div class="modal" id="missingModal" role="dialog" aria-modal="true" aria-labelledby="missingTitle" hidden>
+  <div class="modal-card">
+    <button class="modal-close" id="missingClose" type="button" aria-label="סגירה">✕</button>
+    <span class="siren" aria-hidden="true">🚨</span>
+    <h2 id="missingTitle">דיווח על חבר שנעלם</h2>
+    <p class="sub" style="margin:0">לא ענה בקבוצה כבר יותר מדי זמן? הגיע הזמן להעיר אותו.</p>
+    <div class="missing-tease" id="missingTease" aria-live="polite"></div>
+    <div class="stack">
+      <a class="btn btn-wa" id="missingWa" href="#" target="_blank" rel="noopener">אח שלנו, האם אתה בחיים? 📲</a>
+      <button class="btn btn-ghost" id="missingNext" type="button">עוד עקיצה 🎲</button>
+    </div>
+  </div>
+</div>
 
 <!-- Shuli's excuses generator -->
 <div class="modal" id="excuseModal" role="dialog" aria-modal="true" aria-labelledby="excuseTitle" hidden>
@@ -764,6 +878,34 @@
 
   var ROLES = ["ה-DJ הרשמי 🎧", "אחראי נשנושים 🍕", "הנהג התורן 🚗", "ה-Carry בפורטנייט 🎮"];
   var ROLE_HOLDERS = ["איתי", "אתה"];
+
+  // achievement badge per vibe (a sub-option can override it)
+  var BADGES = {
+    bar: "חובב בירות מושבע 🍺",
+    cinema: "מבקר קולנוע מוסמך 🍿",
+    food: "מאסטר המאנץ' 🍔",
+    tlv: "מלך העיר 🏙️",
+    cafe: "אספרסו אדיקט ☕",
+    fortnite: "גיימר מקצועי 🎮",
+    home: "אלוף הספה 🛋️"
+  };
+  var SUB_BADGES = {
+    "cafe:0": "נווד דיגיטלי 💻",
+    "home:0": "פילוסוף המרפסת 🌿",
+    "home:2": "אלוף הטורנירים 🏆"
+  };
+  function badgeText(){
+    return SUB_BADGES[state.vibe + ":" + state.sub] || BADGES[state.vibe] || "";
+  }
+
+  var MISSING_TEASES = [
+    "נעלם מהרדאר כבר 3 ימים. יש חשד שהוא אצל החמות 👀",
+    "וי כחול אחד בלבד. שתי וי כחולים ואין תשובה. מה קורה פה? ✔️✔️",
+    "אחרונה נראה: מקליד... לפני שבוע ⌨️",
+    "הסטורי שלו מעודכן, אבל לקבוצה הוא לא עונה 🕵️",
+    "ייתכן שנבלע בפקקים מכפר סבא 🚗",
+    "יש עדים שראו אותו בכפר הנופש 🏖️"
+  ];
 
   // ---------- state ----------
   var state = { date:"", time:"", vibe:"", sub:-1, noPhones:false };
@@ -928,12 +1070,12 @@
   dateInput.min = isoDate(new Date());
 
   var dateChips = [
-    ["הערב", function(){ return daysFromNow(0); }],
+    ["היום", function(){ return daysFromNow(0); }],
     ["מחר", function(){ return daysFromNow(1); }],
-    ["חמישי", function(){ return nextWeekday(4); }],
-    ["שישי", function(){ return nextWeekday(5); }]
+    ["שישי", function(){ return nextWeekday(5); }],
+    ["שבת", function(){ return nextWeekday(6); }]
   ];
-  var timeChips = ["19:00", "20:30", "22:00", "23:30"];
+  var timeChips = ["20:00", "20:30", "21:00"];
 
   dateChips.forEach(function(c){
     var b = document.createElement("button");
@@ -1163,6 +1305,7 @@
       $("gmapsLink").href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
     }
 
+    $("badgeName").textContent = badgeText();
     if(!roles.length) shuffleRoles(); else renderRoles();
     // the card has to be visible before its canvas can be sized
     window.requestAnimationFrame(initScratch);
@@ -1201,6 +1344,8 @@
       "📍 מה עושים: " + activityText()
     ];
     if(state.noPhones) lines.push("📵 בלי מסכים: הטלפונים בכיס כל הישיבה");
+    var badge = badgeText();
+    if(badge) lines.push("🏆 הישג: " + badge);
     var q = navQuery();
     if(q) lines.push("🚙 ניווט: https://waze.com/ul?q=" + encodeURIComponent(q) + "&navigate=yes");
     if(roles.length){
@@ -1276,6 +1421,104 @@
     coinBtn.textContent = "הטל מטבע 🪙";
   }
 
+  // ---------- missing bro alert ----------
+  var missingModal = $("missingModal"), lastTease = -1;
+
+  function missingMessage(tease){
+    var lines = ["🚨 דיווח על חבר שנעלם 🚨", "אח שלנו, האם אתה בחיים? 📲", tease];
+    if(state.date && state.time && state.vibe){
+      lines.push("", "ויש ישיבה על הפרק: " + activityText() + ", " + formatDateHe(state.date) + " ב-" + state.time);
+    }
+    lines.push("", "תענה בקבוצה לפני שנפתח חמ\"ל 🫡");
+    return lines.join("\n");
+  }
+  function nextTease(){
+    var i;
+    do{ i = Math.floor(Math.random() * MISSING_TEASES.length); } while(i === lastTease);
+    lastTease = i;
+    $("missingTease").textContent = MISSING_TEASES[i];
+    // no phone number: WhatsApp asks which chat to send it to
+    $("missingWa").href = "https://wa.me/?text=" + encodeURIComponent(missingMessage(MISSING_TEASES[i]));
+  }
+  function openMissing(){
+    nextTease();
+    missingModal.hidden = false;
+    document.body.classList.add("modal-open");
+    $("missingWa").focus();
+  }
+  function closeMissing(){
+    missingModal.hidden = true;
+    document.body.classList.remove("modal-open");
+  }
+  $("missingHeaderBtn").addEventListener("click", openMissing);
+  $("missingNext").addEventListener("click", nextTease);
+  $("missingClose").addEventListener("click", closeMissing);
+  missingModal.addEventListener("click", function(e){ if(e.target === missingModal) closeMissing(); });
+  missingModal.addEventListener("keydown", function(e){ if(e.key === "Escape") closeMissing(); });
+
+  // ---------- bill & tip splitter ----------
+  var TIPS = [0, 10, 12, 15];
+  var tipPct = 12;
+  var billInput = $("billInput"), brosInput = $("brosInput");
+  var splitCopy = $("splitCopy"), splitWa = $("splitWa");
+
+  function money(n){
+    return "₪" + (Math.round(n * 100) / 100).toLocaleString("he-IL", { maximumFractionDigits: 2 });
+  }
+  function bros(){ return Math.max(1, Math.floor(+brosInput.value) || 1); }
+
+  function splitMessage(bill, total, each, n){
+    return [
+      "🧮 חשבון הישיבה 💸",
+      "סה\"כ: " + money(bill) + (tipPct ? " + טיפ " + tipPct + "% = " + money(total) : ""),
+      "מתחלקים: " + n + " אחים",
+      "כל אחד מעביר: " + money(each),
+      "",
+      "💳 להעביר בביט / פייבוקס",
+      "מי שלא מעביר עד מחר נחשב שולי 🤦‍♂️"
+    ].join("\n");
+  }
+
+  function updateSplit(){
+    var bill = Math.max(0, +billInput.value || 0);
+    var n = bros();
+    var total = bill * (1 + tipPct / 100);
+    var each = Math.ceil(total / n); // round up to a whole shekel, nobody wants agorot
+    var has = bill > 0;
+    $("splitAmount").textContent = money(has ? each : 0);
+    var msg = has ? splitMessage(bill, total, each, n) : "";
+    $("splitText").textContent = has ? msg : "תכניס סכום ונכין לך הודעה מוכנה לביט / פייבוקס";
+    splitCopy.disabled = !has;
+    splitCopy.textContent = "העתק 📋";
+    splitWa.setAttribute("aria-disabled", String(!has));
+    splitWa.href = has ? "https://wa.me/?text=" + encodeURIComponent(msg) : "#";
+  }
+
+  TIPS.forEach(function(t){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip" + (t === tipPct ? " on" : "");
+    b.textContent = t ? t + "%" : "בלי טיפ";
+    b.addEventListener("click", function(){
+      tipPct = t;
+      $("tipChips").querySelectorAll(".chip").forEach(function(c){ c.classList.toggle("on", c === b); });
+      updateSplit();
+    });
+    $("tipChips").appendChild(b);
+  });
+  billInput.addEventListener("input", updateSplit);
+  brosInput.addEventListener("input", updateSplit);
+  brosInput.addEventListener("blur", function(){ brosInput.value = bros(); updateSplit(); });
+  $("brosMinus").addEventListener("click", function(){ brosInput.value = Math.max(1, bros() - 1); updateSplit(); });
+  $("brosPlus").addEventListener("click", function(){ brosInput.value = bros() + 1; updateSplit(); });
+  splitCopy.addEventListener("click", function(){
+    copyText($("splitText").textContent).then(function(){
+      splitCopy.textContent = "הועתק! ✓";
+    }, function(){
+      splitCopy.textContent = "תעתיק ידנית";
+    });
+  });
+  updateSplit();
+
   // ---------- Shuli's excuses generator ----------
   var excuseModal = $("excuseModal"), excuseText = $("excuseText"), excuseCopy = $("excuseCopy");
   var lastExcuse = -1;
@@ -1339,6 +1582,8 @@
     state = { date:"", time:"", vibe:"", sub:-1, noPhones:false };
     roles = [];
     resetCoin();
+    billInput.value = "";
+    updateSplit();
     dateInput.value = ""; timeInput.value = "";
     $("noPhones").checked = false;
     onWhenChange();
