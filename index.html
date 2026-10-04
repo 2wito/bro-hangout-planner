@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A10">
+<title>מה הלו"ז אח שלי? | Bro Hangout Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&family=Secular+One&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0A10;
+    --surface: #14141D;
+    --surface-2: #1C1C28;
+    --line: #2A2A3A;
+    --text: #F3F3F7;
+    --muted: #9A9AB0;
+    --lime: #C6FF3D;
+    --pink: #FF2E88;
+    --cyan: #2EE6FF;
+    --violet: #9B5CFF;
+    --wa: #25D366;
+    --radius: 18px;
+    --font-body: "Rubik", "Segoe UI", Arial, sans-serif;
+    --font-display: "Secular One", "Rubik", "Segoe UI", Arial, sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; }
+  body{
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(60vmax 40vmax at 100% 0%, rgba(255,46,136,.18), transparent 60%),
+      radial-gradient(60vmax 40vmax at 0% 100%, rgba(46,230,255,.14), transparent 60%),
+      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: auto, auto, 32px 32px, 32px 32px;
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body.modal-open{ overflow: hidden; }
+  button{ font-family: inherit; }
+  :focus-visible{ outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+  .app{
+    max-width: 480px;
+    margin: 0 auto;
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(110px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom: 22px;
+  }
+  .logo{
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: .04em;
+    color: var(--text);
+    display:flex; align-items:center; gap:8px;
+  }
+  .logo-dot{
+    width:10px; height:10px; border-radius:50%;
+    background: var(--lime);
+    box-shadow: 0 0 10px var(--lime), 0 0 22px rgba(198,255,61,.5);
+  }
+  .progress{ display:flex; gap:6px; }
+  .progress span{
+    width: 28px; height: 5px; border-radius: 4px;
+    background: var(--line);
+    transition: background .3s, box-shadow .3s;
+  }
+  .progress span.done{ background: var(--lime); }
+  .progress span.current{ background: var(--pink); box-shadow: 0 0 10px var(--pink); }
+
+  /* ---------- steps ---------- */
+  .step{ display:none; }
+  .step.active{ display:block; animation: stepIn .35s cubic-bezier(.2,.8,.2,1); }
+  .step.active.from-back{ animation-name: stepInBack; }
+  @keyframes stepIn{ from{ opacity:0; transform: translateX(-24px); } to{ opacity:1; transform:none; } }
+  @keyframes stepInBack{ from{ opacity:0; transform: translateX(24px); } to{ opacity:1; transform:none; } }
+
+  .kicker{
+    display:inline-block;
+    font-size: 12px; font-weight: 700; letter-spacing: .12em;
+    color: var(--lime);
+    border: 1px solid rgba(198,255,61,.35);
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 14px;
+    direction: ltr;
+  }
+  h1, h2{
+    font-family: var(--font-display);
+    font-weight: 400;
+    margin: 0 0 8px;
+    line-height: 1.15;
+  }
+  h1{
+    font-size: clamp(40px, 12vw, 56px);
+    text-shadow: 0 0 18px rgba(255,46,136,.55);
+  }
+  h1 .accent{ color: var(--pink); }
+  h2{ font-size: clamp(28px, 8vw, 34px); }
+  .sub{ color: var(--muted); margin: 0 0 22px; }
+
+  /* ---------- welcome ---------- */
+  .hero{ padding-top: 6vh; }
+  .hero-tags{ display:flex; flex-wrap:wrap; gap:8px; margin: 22px 0 30px; }
+  .hero-tags span{
+    background: var(--surface); border:1px solid var(--line);
+    padding: 6px 12px; border-radius: 999px; font-size: 14px;
+  }
+  .hero-sign{
+    margin: 0 0 26px;
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--cyan);
+    text-shadow: 0 0 12px rgba(46,230,255,.6);
+    transform: rotate(-3deg);
+    display:inline-block;
+  }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%;
+    border: none; border-radius: 14px;
+    padding: 16px 20px;
+    font-size: 17px; font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform .12s, box-shadow .2s, opacity .2s, background .2s;
+  }
+  .btn:active:not(:disabled){ transform: scale(.98); }
+  .btn:disabled{ opacity: .35; cursor: not-allowed; }
+  .btn-primary{
+    background: var(--lime); color: #0A0A10;
+    box-shadow: 0 0 0 1px rgba(198,255,61,.4), 0 8px 30px rgba(198,255,61,.25);
+  }
+  .btn-ghost{
+    background: transparent; color: var(--text);
+    border: 1px solid var(--line);
+    font-weight: 500; font-size: 15px;
+    padding: 13px 18px;
+  }
+  .btn-ghost:hover{ border-color: var(--muted); }
+  .btn-wheel{
+    background: linear-gradient(110deg, var(--pink), var(--violet));
+    color: #fff;
+    box-shadow: 0 8px 30px rgba(255,46,136,.3);
+  }
+  .btn-wa{
+    background: var(--wa); color: #06210F;
+    box-shadow: 0 8px 30px rgba(37,211,102,.28);
+  }
+  .btn-wa svg{ width:22px; height:22px; fill: currentColor; }
+  .stack{ display:grid; gap: 10px; }
+
+  /* ---------- date/time ---------- */
+  .field{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .field-label{ display:block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .field input{
+    width:100%;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--text);
+    color-scheme: dark;
+    font-family: inherit; font-size: 17px;
+    padding: 10px 12px;
+  }
+  .field input:focus{ outline:none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(46,230,255,.18); }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .chip{
+    background: transparent; color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 12px; font-size: 14px;
+    cursor:pointer;
+    transition: border-color .2s, background .2s, color .2s;
+  }
+  .chip:hover{ border-color: var(--muted); }
+  .chip.on{ border-color: var(--lime); color: var(--lime); background: rgba(198,255,61,.08); }
+
+  .or{
+    display:flex; align-items:center; gap:12px;
+    color: var(--muted); font-size: 13px;
+    margin: 22px 0 14px;
+  }
+  .or::before, .or::after{ content:""; flex:1; height:1px; background: var(--line); }
+  .hint{ color: var(--muted); font-size: 13px; text-align:center; margin: 8px 0 0; }
+
+  /* ---------- choice cards ---------- */
+  .choices{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .choices.single{ grid-template-columns: 1fr; }
+  .card{
+    position: relative;
+    display:flex; flex-direction: column; align-items:flex-start; gap: 8px;
+    text-align: right;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 14px;
+    color: var(--text);
+    font-size: 16px; font-weight: 700;
+    cursor: pointer;
+    min-height: 96px;
+    transition: border-color .2s, box-shadow .2s, transform .12s, background .2s;
+  }
+  .choices.single .card{ flex-direction: row; align-items:center; min-height: 0; padding: 16px; }
+  .card:hover{ border-color: #3D3D52; }
+  .card:active{ transform: scale(.98); }
+  .card .emoji{ font-size: 30px; line-height: 1; }
+  .card.selected{
+    border-color: var(--lime);
+    background: linear-gradient(160deg, rgba(198,255,61,.12), var(--surface) 60%);
+    box-shadow: 0 0 0 1px var(--lime), 0 0 24px rgba(198,255,61,.22);
+  }
+  .card.selected::after{
+    content:"✓";
+    position:absolute; top:10px; left:12px;
+    width:22px; height:22px; border-radius:50%;
+    background: var(--lime); color:#0A0A10;
+    font-size: 13px; font-weight: 800;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card.wide{ grid-column: 1 / -1; flex-direction: row; align-items:center; min-height: 0; }
+
+  /* ---------- bottom nav ---------- */
+  .nav{
+    position: fixed; inset-inline: 0; bottom: 0;
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, var(--bg) 60%, rgba(10,10,16,0));
+    z-index: 20;
+  }
+  .nav-inner{ max-width: 480px; margin: 0 auto; display:flex; gap:10px; }
+  .nav .btn-ghost{ width: auto; flex: 0 0 auto; padding-inline: 22px; }
+  .nav .btn-primary{ flex: 1; }
+
+  /* ---------- summary ---------- */
+  .summary-head{ text-align:center; margin-bottom: 20px; }
+  .summary-head h2{ font-size: clamp(34px, 10vw, 44px); text-shadow: 0 0 18px rgba(198,255,61,.45); color: var(--lime); }
+
+  .pass{
+    position: relative;
+    background: var(--surface);
+    border-radius: 22px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(255,46,136,.25), 0 20px 50px rgba(0,0,0,.5);
+  }
+  .pass-top{
+    padding: 18px 20px;
+    background: linear-gradient(110deg, rgba(255,46,136,.22), rgba(155,92,255,.18));
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .pass-title{ font-family: var(--font-display); font-size: 20px; }
+  .pass-code{ font-size: 12px; letter-spacing: .14em; color: var(--muted); direction:ltr; }
+  .pass-cut{
+    height: 0; border-top: 2px dashed var(--line);
+    margin: 0 18px; position: relative;
+  }
+  .pass-cut::before, .pass-cut::after{
+    content:""; position:absolute; top:-12px;
+    width:22px; height:22px; border-radius:50%; background: var(--bg);
+  }
+  .pass-cut::before{ right:-30px; }
+  .pass-cut::after{ left:-30px; }
+  .pass-body{ padding: 18px 20px 20px; display:grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; }
+  .pass-field.full{ grid-column: 1 / -1; }
+  .pass-label{ display:block; font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+  .pass-value{ display:block; font-size: 18px; font-weight: 800; }
+  .pass-value.big{ font-size: 21px; color: var(--cyan); }
+  .pass-stamp{
+    position:absolute; left: 16px; bottom: 16px;
+    transform: rotate(-12deg);
+    border: 2px solid var(--pink); color: var(--pink);
+    border-radius: 8px; padding: 2px 8px;
+    font-weight: 800; font-size: 13px; letter-spacing: .08em;
+    direction: ltr;
+    opacity: .9;
+  }
+  .countdown{
+    text-align:center; margin: 16px 0 26px; color: var(--muted); font-size: 15px;
+  }
+  .countdown b{ color: var(--text); font-variant-numeric: tabular-nums; }
+
+  .section-label{ font-weight: 800; margin: 0 0 10px; font-size: 16px; }
+
+  .scratch{
+    position: relative;
+    height: 120px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    border: 1px dashed var(--lime);
+    display:flex; align-items:center; justify-content:center;
+    padding: 12px 18px;
+    margin-bottom: 22px;
+    overflow: hidden;
+    user-select: none;
+  }
+  .scratch-prize{ margin:0; text-align:center; font-size: 18px; font-weight: 800; color: var(--lime); }
+  .scratch canvas{
+    position:absolute; inset:0; width:100%; height:100%;
+    touch-action: none; cursor: crosshair;
+    transition: opacity .5s;
+  }
+  .scratch canvas.revealed{ opacity: 0; pointer-events: none; }
+
+  .pledge{
+    display:flex; gap: 12px; align-items:flex-start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .pledge:has(input:checked){ border-color: var(--pink); }
+  .pledge input{ width: 22px; height: 22px; margin: 2px 0 0; accent-color: var(--pink); flex: 0 0 auto; }
+  .pledge-title{ display:block; font-weight: 800; }
+  .pledge-text{ display:block; color: var(--muted); font-size: 14px; }
+
+  /* ---------- wheel modal ---------- */
+  .modal{
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(5,5,10,.82);
+    backdrop-filter: blur(6px);
+    display:flex; align-items:center; justify-content:center;
+    padding: 16px;
+  }
+  .modal-card{
+    position: relative;
+    width: 100%; max-width: 420px;
+    max-height: 100%; overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 24px 20px 20px;
+    text-align: center;
+  }
+  .modal-close{
+    position:absolute; top: 12px; left: 12px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface-2); color: var(--text);
+    border: 1px solid var(--line);
+    font-size: 16px; cursor: pointer;
+  }
+  .wheel-stage{ position: relative; width: min(280px, 72vw); aspect-ratio: 1; margin: 18px auto 20px; }
+  .wheel-pointer{
+    position:absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    z-index: 2;
+    width: 0; height: 0;
+    border-left: 13px solid transparent; border-right: 13px solid transparent;
+    border-top: 24px solid var(--lime);
+    filter: drop-shadow(0 0 6px var(--lime));
+  }
+  .wheel{
+    position:absolute; inset:0; border-radius: 50%;
+    border: 4px solid #0A0A10;
+    box-shadow: 0 0 0 2px var(--pink), 0 0 34px rgba(255,46,136,.45);
+    transition: transform 3.6s cubic-bezier(.12,.75,.12,1);
+  }
+  .wheel-seg{
+    position:absolute; inset:0;
+    display:flex; justify-content:center;
+    padding-top: 9%;
+    font-size: clamp(22px, 7vw, 28px);
+    pointer-events:none;
+  }
+  .wheel-hub{
+    position:absolute; top:50%; left:50%; transform: translate(-50%,-50%);
+    width: 22%; aspect-ratio:1; border-radius:50%;
+    background: #0A0A10; border: 3px solid var(--lime);
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-display); color: var(--lime); font-size: 14px;
+    z-index: 1;
+  }
+  .wheel-result{
+    background: var(--surface-2);
+    border: 1px solid var(--lime);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .wheel-result p{ margin: 0; }
+  .wheel-result .label{ color: var(--muted); font-size: 13px; }
+  .wheel-result .value{ font-size: 19px; font-weight: 800; color: var(--lime); }
+
+  #confetti{ position: fixed; inset: 0; pointer-events: none; z-index: 100; }
+
+  @media (prefers-reduced-motion: reduce){
+    .step.active{ animation: none; }
+    .wheel{ transition-duration: .8s; }
+  }
+</style>
+</head>
+<body>
+
+<main class="app">
+  <header class="topbar">
+    <div class="logo"><span class="logo-dot"></span>ישיבה עם החבר'ה</div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+  </header>
+
+  <!-- welcome -->
+  <section class="step" data-step="welcome">
+    <div class="hero">
+      <span class="kicker">BRO HANGOUT PLANNER</span>
+      <h1>מה הלו"ז<br><span class="accent">אח שלי?</span></h1>
+      <p class="sub">שלוש שאלות, אפס התלבטויות. סוגרים ישיבה ושולחים לחבר'ה בוואטסאפ.</p>
+      <div class="hero-tags">
+        <span>🍺 ברים</span><span>🍔 אוכל</span><span>🎮 פורטנייט</span><span>🏙️ תל אביב</span><span>☕ קפה</span>
+      </div>
+      <p class="hero-sign">איפה יושבים היום?</p>
+      <button class="btn btn-primary" id="startBtn" type="button">יאללה, בוא נסגור 🚀</button>
+    </div>
+  </section>
+
+  <!-- step 1: when -->
+  <section class="step" data-step="when">
+    <span class="kicker">01 / WHEN</span>
+    <h2>מתי יושבים? 📅</h2>
+    <p class="sub">תזרוק תאריך ושעה, את השאר נסגור ביחד.</p>
+
+    <div class="field">
+      <label class="field-label" for="dateInput">תאריך</label>
+      <input type="date" id="dateInput">
+      <div class="chips" id="dateChips"></div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="timeInput">שעה</label>
+      <input type="time" id="timeInput">
+      <div class="chips" id="timeChips"></div>
+    </div>
+
+    <p class="or">או</p>
+    <button class="btn btn-wheel" id="openWheelBtn" type="button" disabled>תפתיע אותי / סובב את הגלגל 🎡</button>
+    <p class="hint" id="wheelHint">קודם תאריך ושעה, ואז הגלגל בוחר את כל השאר</p>
+  </section>
+
+  <!-- step 2: vibe -->
+  <section class="step" data-step="vibe">
+    <span class="kicker">02 / VIBE</span>
+    <h2>מה האווירה להיום?</h2>
+    <p class="sub">תבחר כיוון, אנחנו נדייק אותו.</p>
+    <div class="choices" id="vibeChoices"></div>
+  </section>
+
+  <!-- step 3: sub-option (rendered per vibe) -->
+  <section class="step" data-step="sub">
+    <span class="kicker">03 / DETAILS</span>
+    <h2 id="subTitle"></h2>
+    <p class="sub" id="subText"></p>
+    <div class="choices" id="subChoices"></div>
+  </section>
+
+  <!-- summary -->
+  <section class="step" data-step="summary">
+    <div class="summary-head">
+      <span class="kicker">LOCKED IN</span>
+      <h2>סגרנו! 🔥</h2>
+      <p class="sub" style="margin:0">הלו"ז הכי מדויק שיש. עכשיו רק לשלוח לחבר'ה.</p>
+    </div>
+
+    <div class="pass">
+      <div class="pass-top">
+        <span class="pass-title">כרטיס ישיבה 🎟️</span>
+        <span class="pass-code" id="passCode">BRO-0000</span>
+      </div>
+      <div class="pass-cut" aria-hidden="true"></div>
+      <div class="pass-body">
+        <div class="pass-field">
+          <span class="pass-label">📅 תאריך</span>
+          <span class="pass-value" id="sumDate">—</span>
+        </div>
+        <div class="pass-field">
+          <span class="pass-label">⏰ שעה</span>
+          <span class="pass-value" id="sumTime">—</span>
+        </div>
+        <div class="pass-field full">
+          <span class="pass-label">📍 מה עושים</span>
+          <span class="pass-value big" id="sumActivity">—</span>
+        </div>
+      </div>
+      <span class="pass-stamp" id="passStamp" hidden>📵 NO PHONES</span>
+    </div>
+
+    <p class="countdown" id="countdown"></p>
+
+    <p class="section-label">כרטיס גירוד 🎰 תגרד ותגלה מה זכית</p>
+    <div class="scratch">
+      <p class="scratch-prize" id="scratchPrize"></p>
+      <canvas id="scratchCanvas" aria-label="כרטיס גירוד: גרור את האצבע כדי לגלות את הפרס"></canvas>
+    </div>
+
+    <label class="pledge">
+      <input type="checkbox" id="noPhones">
+      <span>
+        <span class="pledge-title">בלי מסכים 📵</span>
+        <span class="pledge-text">מתחייב שהטלפון בכיס כל הישיבה (חוץ מתמונה אחת לסטורי)</span>
+      </span>
+    </label>
+
+    <div class="stack">
+      <a class="btn btn-wa" id="waBtn" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 448 512" aria-hidden="true"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-221.9 99.5-221.9 221.9 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.5 224.1-221.9 0-59.3-23.1-115-64.1-157.1zM223.9 438.7h-.1c-33.2 0-65.7-8.9-94-25.8l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.6-29.6-28.4-63.7-28.4-98.7 0-102.2 83.2-185.4 185.5-185.4 49.6 0 96.2 19.3 131.3 54.5 35.1 35.1 54.4 81.8 54.4 131.4 0 102.3-83.3 185.7-185.5 185.7zm101.5-138.9c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.5 21.7-3.2 3.7-6.5 4.1-12 1.4-5.5-2.8-23.2-8.6-44.2-27.3-16.3-14.6-27.3-32.6-30.5-38.1-3.2-5.6-.3-8.6 2.4-11.4 2.5-2.5 5.6-6.5 8.4-9.7 2.8-3.2 3.7-5.6 5.6-9.3 1.9-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2s-9.7 1.4-14.8 6.9c-5.1 5.6-19.4 19-19.4 46.3s19.9 53.7 22.7 57.4c2.8 3.7 39.1 59.7 94.8 83.7 13.2 5.7 23.5 9.1 31.6 11.7 13.3 4.2 25.4 3.6 35 2.2 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+        <span>שולחים לחבר'ה בוואטסאפ</span>
+      </a>
+      <button class="btn btn-ghost" id="editBtn" type="button">לשנות משהו? ✏️</button>
+      <button class="btn btn-ghost" id="restartBtn" type="button">מתכננים ישיבה חדשה 🔄</button>
+    </div>
+  </section>
+</main>
+
+<nav class="nav" id="nav" hidden>
+  <div class="nav-inner">
+    <button class="btn btn-ghost" id="backBtn" type="button">→ חזרה</button>
+    <button class="btn btn-primary" id="nextBtn" type="button" disabled>הבא ←</button>
+  </div>
+</nav>
+
+<!-- wheel of fortune -->
+<div class="modal" id="wheelModal" role="dialog" aria-modal="true" aria-labelledby="wheelTitle" hidden>
+  <div class="modal-card">
+    <button class="modal-close" id="wheelClose" type="button" aria-label="סגירה">✕</button>
+    <h2 id="wheelTitle">גלגל הלו"ז 🎡</h2>
+    <p class="sub" style="margin:0">תן לגורל להחליט איפה יושבים היום</p>
+    <div class="wheel-stage">
+      <div class="wheel-pointer" aria-hidden="true"></div>
+      <div class="wheel" id="wheel" aria-hidden="true"></div>
+      <div class="wheel-hub" aria-hidden="true">BRO</div>
+    </div>
+    <button class="btn btn-wheel" id="spinBtn" type="button">סובב! 🎡</button>
+    <div id="wheelResult" hidden>
+      <div class="wheel-result">
+        <p class="label">הגלגל החליט:</p>
+        <p class="value" id="wheelResultText"></p>
+      </div>
+      <div class="stack">
+        <button class="btn btn-primary" id="wheelConfirm" type="button">סגור, הולכים על זה 🤝</button>
+        <button class="btn btn-ghost" id="wheelRespin" type="button">עוד סיבוב 🔄</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- config ----------
+  // the number the hangout recap is sent to (international format, no "+")
+  var WHATSAPP_PHONE = "972532777144";
+
+  var VIBES = [
+    { id:"bar", label:"יוצאים לבר", emoji:"🍺", color:"#C6FF3D",
+      title:"לאיזה בר נוחתים? 🍻", text:"תבחר אזור, הבירה כבר מחכה.",
+      options:[["סלון ברלין","🍻"], ["נחלת בנימין / רוטשילד","🍸"], ["פלורנטין","🍺"], ["ברנרד","🍻"], ["שרונה","🍷"]] },
+    { id:"cinema", label:"סרט בקולנוע", emoji:"🍿", color:"#FF2E88", options:null },
+    { id:"food", label:"לאכול משהו טוב בחוץ", emoji:"🍔", color:"#2EE6FF",
+      title:"מה אוכלים? 🍔", text:"בטן מלאה, ישיבה שמחה.",
+      options:[["פיצה","🍕"], ["שווארמה","🌯"], ["המבורגר","🍔"], ["תאילנדי","🇹🇭"], ["סושי","🍣"], ["מסעדת בשרים","🥩"]] },
+    { id:"tlv", label:"סיבוב בתל אביב", emoji:"🏙️", color:"#9B5CFF",
+      title:"לאן מתגלגלים? 🏙️", text:"סיבוב בעיר, בלי לחץ.",
+      options:[["דיזנגוף","🏙️"], ["פלורנטין","🎨"], ["הטיילת והים","🌊"]] },
+    { id:"cafe", label:"בית קפה", emoji:"☕", color:"#FFB72E",
+      title:"איזה סוג ישיבה? ☕", text:"פרודוקטיביות או חפירות?",
+      options:[["עבודה / ישיבה עם לפטופ","💻"], ["בלי לפטופ - רק קפה ודיבורים","☕"]] },
+    { id:"fortnite", label:"סשן פורטנייט בבית", emoji:"🎮", color:"#FF2E88",
+      title:"איך משחקים הערב? 🎮", text:"Drop in, אחי.",
+      options:[["סקוואד / דואו בפורטנייט","🎮🎮"], ["פיצה / חטיפים בלייב","🍕🍿"]] },
+    { id:"home", label:"ישיבה ביתית", emoji:"🏠", color:"#2EE6FF",
+      title:"מה הסטייל בבית? 🏠", text:"הספה כבר מחכה.",
+      options:[["בירה ופייסל","🍺🌿"], ["מוזיקה ונשנושים","🎶"], ["טורניר ספורט / משחקים","⚽"]] }
+  ];
+
+  var PRIZES = [
+    "זכית! איתי מפנק בבירה הראשונה 🍺",
+    "זכית! אתה בוחר איפה נוחתים בפורטנייט 🎮",
+    "זכית! איתי מזמין את הצ'יפס 🍟",
+    "זכית! מי שמאחר משלם על הסיבוב 🍻",
+    "זכית! אתה הדי.ג'יי של הערב 🎧",
+    "זכית! פטור מלשטוף כלים אחרי הישיבה 🧽",
+    "זכית! איתי מקפיץ אותך הביתה 🚗"
+  ];
+
+  // ---------- state ----------
+  var state = { date:"", time:"", vibe:"", sub:-1, noPhones:false };
+  var current = "welcome";
+
+  function vibeById(id){
+    for(var i = 0; i < VIBES.length; i++){ if(VIBES[i].id === id) return VIBES[i]; }
+    return null;
+  }
+  function hasSub(){ var v = vibeById(state.vibe); return !!(v && v.options); }
+
+  // question steps for the current branch ("סרט בקולנוע" has no step 3)
+  function questionSteps(){
+    return (state.vibe && !hasSub()) ? ["when","vibe"] : ["when","vibe","sub"];
+  }
+
+  function activityText(){
+    var v = vibeById(state.vibe);
+    if(!v) return "";
+    var text = v.label + " " + v.emoji;
+    if(v.options && state.sub >= 0){
+      var o = v.options[state.sub];
+      text += " – " + o[0] + " " + o[1];
+    }
+    return text;
+  }
+
+  // ---------- dom ----------
+  var $ = function(id){ return document.getElementById(id); };
+  var nav = $("nav"), backBtn = $("backBtn"), nextBtn = $("nextBtn");
+  var dateInput = $("dateInput"), timeInput = $("timeInput");
+  var openWheelBtn = $("openWheelBtn");
+
+  function makeCard(emoji, label, onPick, extraClass){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "card" + (extraClass ? " " + extraClass : "");
+    var e = document.createElement("span");
+    e.className = "emoji"; e.textContent = emoji;
+    var t = document.createElement("span");
+    t.textContent = label;
+    b.appendChild(e); b.appendChild(t);
+    b.addEventListener("click", onPick);
+    return b;
+  }
+
+  // vibe cards — 7 options, so the last one spans the full row
+  VIBES.forEach(function(v, i){
+    var card = makeCard(v.emoji, v.label, function(){
+      if(state.vibe !== v.id){ state.vibe = v.id; state.sub = -1; }
+      markSelected($("vibeChoices"), card);
+      window.setTimeout(goNext, 220);
+    }, i === VIBES.length - 1 ? "wide" : "");
+    card.dataset.value = v.id;
+    $("vibeChoices").appendChild(card);
+  });
+
+  function renderSub(){
+    var v = vibeById(state.vibe);
+    if(!v || !v.options) return;
+    $("subTitle").textContent = v.title;
+    $("subText").textContent = v.text;
+    var box = $("subChoices");
+    box.innerHTML = "";
+    box.classList.toggle("single", v.options.length <= 3);
+    v.options.forEach(function(o, i){
+      var isLastOdd = v.options.length > 3 && v.options.length % 2 === 1 && i === v.options.length - 1;
+      var card = makeCard(o[1], o[0], function(){
+        state.sub = i;
+        markSelected(box, card);
+        window.setTimeout(goNext, 220);
+      }, isLastOdd ? "wide" : "");
+      if(state.sub === i) card.classList.add("selected");
+      box.appendChild(card);
+    });
+  }
+
+  function markSelected(box, card){
+    box.querySelectorAll(".card").forEach(function(c){ c.classList.toggle("selected", c === card); });
+  }
+
+  // ---------- navigation ----------
+  function isValid(step){
+    if(step === "when") return !!(state.date && state.time);
+    if(step === "vibe") return !!state.vibe;
+    if(step === "sub") return state.sub >= 0;
+    return true;
+  }
+
+  function renderProgress(){
+    var p = $("progress");
+    p.innerHTML = "";
+    if(current === "welcome") return;
+    var steps = questionSteps();
+    var idx = current === "summary" ? steps.length : steps.indexOf(current);
+    steps.forEach(function(_, i){
+      var s = document.createElement("span");
+      if(i < idx) s.className = "done";
+      else if(i === idx) s.className = "current";
+      p.appendChild(s);
+    });
+  }
+
+  function goTo(step, back){
+    current = step;
+    document.querySelectorAll(".step").forEach(function(s){
+      var on = s.dataset.step === step;
+      s.classList.toggle("active", on);
+      s.classList.toggle("from-back", on && !!back);
+    });
+    if(step === "vibe"){
+      document.querySelectorAll("#vibeChoices .card").forEach(function(c){
+        c.classList.toggle("selected", c.dataset.value === state.vibe);
+      });
+    }
+    if(step === "sub") renderSub();
+    if(step === "summary") renderSummary(); else stopCountdown();
+
+    var inQuestions = questionSteps().indexOf(step) !== -1;
+    nav.hidden = !inQuestions;
+    if(inQuestions){
+      nextBtn.disabled = !isValid(step);
+      backBtn.hidden = step === "when";
+    }
+    renderProgress();
+    window.scrollTo(0, 0);
+  }
+
+  function goNext(){
+    if(!isValid(current)) return;
+    var steps = questionSteps();
+    var i = steps.indexOf(current);
+    goTo(i === steps.length - 1 ? "summary" : steps[i + 1]);
+  }
+
+  function goBack(){
+    var steps = questionSteps();
+    var i = steps.indexOf(current);
+    if(i > 0) goTo(steps[i - 1], true);
+  }
+
+  nextBtn.addEventListener("click", goNext);
+  backBtn.addEventListener("click", goBack);
+  $("startBtn").addEventListener("click", function(){ goTo("when"); });
+
+  // ---------- date & time ----------
+  function pad2(n){ return n < 10 ? "0" + n : String(n); }
+  function isoDate(d){ return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+  function daysFromNow(n){ var d = new Date(); d.setDate(d.getDate() + n); return d; }
+  function nextWeekday(day){ return daysFromNow((day - new Date().getDay() + 7) % 7); }
+
+  dateInput.min = isoDate(new Date());
+
+  var dateChips = [
+    ["הערב", function(){ return daysFromNow(0); }],
+    ["מחר", function(){ return daysFromNow(1); }],
+    ["חמישי", function(){ return nextWeekday(4); }],
+    ["שישי", function(){ return nextWeekday(5); }]
+  ];
+  var timeChips = ["19:00", "20:30", "22:00", "23:30"];
+
+  dateChips.forEach(function(c){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = c[0];
+    b.addEventListener("click", function(){ dateInput.value = isoDate(c[1]()); onWhenChange(); });
+    $("dateChips").appendChild(b);
+  });
+  timeChips.forEach(function(t){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = t;
+    b.addEventListener("click", function(){ timeInput.value = t; onWhenChange(); });
+    $("timeChips").appendChild(b);
+  });
+
+  function syncChips(){
+    $("dateChips").querySelectorAll(".chip").forEach(function(b, i){
+      b.classList.toggle("on", !!state.date && isoDate(dateChips[i][1]()) === state.date);
+    });
+    $("timeChips").querySelectorAll(".chip").forEach(function(b){
+      b.classList.toggle("on", b.textContent === state.time);
+    });
+  }
+
+  function onWhenChange(){
+    state.date = dateInput.value;
+    state.time = timeInput.value;
+    syncChips();
+    var ok = isValid("when");
+    if(current === "when") nextBtn.disabled = !ok;
+    openWheelBtn.disabled = !ok;
+    $("wheelHint").textContent = ok ? "הגלגל בוחר גם אווירה וגם מקום. אפשר לשנות אחר כך" : "קודם תאריך ושעה, ואז הגלגל בוחר את כל השאר";
+  }
+  dateInput.addEventListener("input", onWhenChange);
+  timeInput.addEventListener("input", onWhenChange);
+
+  function formatDateHe(str){
+    if(!str) return "";
+    var p = str.split("-");
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    try{
+      return new Intl.DateTimeFormat("he-IL", { weekday:"long", day:"numeric", month:"numeric" }).format(d);
+    }catch(err){ return p[2] + "." + p[1]; }
+  }
+
+  // ---------- sound (synthesized, no files) ----------
+  var audioCtx = null;
+  function tone(freq, type, start, dur, vol){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var t0 = audioCtx.currentTime + start;
+      var osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(vol, t0 + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t0); osc.stop(t0 + dur + 0.02);
+    }catch(err){ /* no audio — everything still works */ }
+  }
+  function winChime(){ [523.25, 659.25, 783.99, 1046.5].forEach(function(f, i){ tone(f, "square", i * 0.08, 0.25, 0.05); }); }
+
+  // ---------- wheel of fortune ----------
+  var wheel = $("wheel"), spinBtn = $("spinBtn"), wheelModal = $("wheelModal");
+  var SEG = 360 / VIBES.length;
+  var wheelRotation = 0, spinning = false;
+
+  (function buildWheel(){
+    var stops = VIBES.map(function(v, i){
+      var shade = i % 2 ? "#1C1C28" : "#262636";
+      return v.color + "22 " + (i * SEG) + "deg, " + shade + " " + (i * SEG + 0.5) + "deg " + ((i + 1) * SEG - 0.6) + "deg, " + v.color + " " + ((i + 1) * SEG - 0.6) + "deg " + ((i + 1) * SEG) + "deg";
+    });
+    wheel.style.background = "conic-gradient(" + stops.join(", ") + ")";
+    VIBES.forEach(function(v, i){
+      var s = document.createElement("span");
+      s.className = "wheel-seg";
+      s.style.transform = "rotate(" + ((i + 0.5) * SEG) + "deg)";
+      s.textContent = v.emoji;
+      wheel.appendChild(s);
+    });
+  })();
+
+  function openWheel(){
+    $("wheelResult").hidden = true;
+    spinBtn.hidden = false;
+    wheelModal.hidden = false;
+    document.body.classList.add("modal-open");
+    spinBtn.focus();
+  }
+  function closeWheel(){
+    wheelModal.hidden = true;
+    document.body.classList.remove("modal-open");
+  }
+
+  function spin(){
+    if(spinning) return;
+    spinning = true;
+    spinBtn.disabled = true;
+
+    var vi = Math.floor(Math.random() * VIBES.length);
+    var v = VIBES[vi];
+    var si = v.options ? Math.floor(Math.random() * v.options.length) : -1;
+
+    // land the centre of segment vi under the top pointer (+ a little jitter)
+    var jitter = (Math.random() - 0.5) * SEG * 0.6;
+    var target = 360 - (vi + 0.5) * SEG + jitter;
+    var base = wheelRotation - (wheelRotation % 360) + 360 * 6;
+    wheelRotation = base + target;
+    wheel.style.transform = "rotate(" + wheelRotation + "deg)";
+
+    var SPIN_MS = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 800 : 3600;
+    var elapsed = 0, gap = 50;
+    (function tick(){
+      if(elapsed >= SPIN_MS - 150) return;
+      tone(720, "square", 0, 0.05, 0.05);
+      gap *= 1.13; elapsed += gap;
+      window.setTimeout(tick, gap);
+    })();
+
+    window.setTimeout(function(){
+      state.vibe = v.id;
+      state.sub = si;
+      $("wheelResultText").textContent = activityText();
+      $("wheelResult").hidden = false;
+      spinBtn.hidden = true;
+      spinBtn.disabled = false;
+      spinning = false;
+      winChime();
+      confetti();
+    }, SPIN_MS);
+  }
+
+  openWheelBtn.addEventListener("click", openWheel);
+  $("wheelClose").addEventListener("click", closeWheel);
+  spinBtn.addEventListener("click", spin);
+  $("wheelRespin").addEventListener("click", function(){ $("wheelResult").hidden = true; spinBtn.hidden = false; spin(); });
+  $("wheelConfirm").addEventListener("click", function(){ closeWheel(); goTo("summary"); });
+  wheelModal.addEventListener("keydown", function(e){ if(e.key === "Escape" && !spinning) closeWheel(); });
+
+  // ---------- scratch card ----------
+  var canvas = $("scratchCanvas"), ctx = canvas.getContext("2d");
+  var prize = "", revealed = false, scratching = false, cells = {};
+  var GRID = 16, BRUSH = 22;
+
+  function drawFoil(){
+    var w = canvas.clientWidth, h = canvas.clientHeight, dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalCompositeOperation = "source-over";
+    var g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, "#FF2E88"); g.addColorStop(.5, "#9B5CFF"); g.addColorStop(1, "#2EE6FF");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = "rgba(255,255,255,.12)"; ctx.lineWidth = 6;
+    for(var x = -h; x < w; x += 18){ ctx.beginPath(); ctx.moveTo(x, h); ctx.lineTo(x + h, 0); ctx.stroke(); }
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 18px Rubik, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("🎰 גרד כאן אחי 🎰", w / 2, h / 2);
+  }
+
+  function initScratch(){
+    prize = PRIZES[Math.floor(Math.random() * PRIZES.length)];
+    $("scratchPrize").textContent = prize;
+    revealed = false; scratching = false; cells = {};
+    canvas.classList.remove("revealed");
+    drawFoil();
+  }
+
+  function scratchAt(x, y){
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath(); ctx.arc(x, y, BRUSH, 0, Math.PI * 2); ctx.fill();
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    if(w <= 0 || h <= 0) return;
+    // mark every grid cell the brush covers, so the % tracks what you actually see
+    var cw = w / GRID, ch = h / GRID;
+    var c0 = Math.floor(x / cw), r0 = Math.floor(y / ch);
+    var cs = Math.ceil(BRUSH / cw), rs = Math.ceil(BRUSH / ch);
+    for(var r = r0 - rs; r <= r0 + rs; r++){
+      if(r < 0 || r >= GRID) continue;
+      for(var c = c0 - cs; c <= c0 + cs; c++){
+        if(c >= 0 && c < GRID) cells[r + "_" + c] = 1;
+      }
+    }
+    if(!revealed && Object.keys(cells).length / (GRID * GRID) >= 0.45) reveal();
+  }
+
+  function reveal(){
+    revealed = true;
+    canvas.classList.add("revealed");
+    winChime();
+    confetti();
+    updateWhatsApp();
+  }
+
+  function pos(e){ var r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  canvas.addEventListener("pointerdown", function(e){
+    if(revealed) return;
+    scratching = true;
+    canvas.setPointerCapture(e.pointerId);
+    var p = pos(e); scratchAt(p.x, p.y);
+  });
+  canvas.addEventListener("pointermove", function(e){
+    if(!scratching || revealed) return;
+    var p = pos(e); scratchAt(p.x, p.y);
+  });
+  ["pointerup", "pointercancel"].forEach(function(ev){ canvas.addEventListener(ev, function(){ scratching = false; }); });
+
+  // ---------- no phones pledge ----------
+  $("noPhones").addEventListener("change", function(e){
+    state.noPhones = e.target.checked;
+    $("passStamp").hidden = !state.noPhones;
+    updateWhatsApp();
+  });
+
+  // ---------- summary ----------
+  function renderSummary(){
+    $("sumDate").textContent = formatDateHe(state.date);
+    $("sumTime").textContent = state.time;
+    $("sumActivity").textContent = activityText();
+    $("passCode").textContent = "BRO-" + state.date.slice(5).replace("-", "") + state.time.replace(":", "");
+    $("passStamp").hidden = !state.noPhones;
+    // the card has to be visible before its canvas can be sized
+    window.requestAnimationFrame(initScratch);
+    updateWhatsApp();
+    startCountdown();
+    confetti();
+  }
+
+  var countdownId = null;
+  function tickCountdown(){
+    var el = $("countdown");
+    var d = state.date.split("-"), t = state.time.split(":");
+    var target = new Date(+d[0], +d[1] - 1, +d[2], +t[0], +t[1]);
+    var diff = target - Date.now();
+    if(isNaN(diff)){ el.textContent = ""; return; }
+    if(diff <= 0){ el.textContent = "הגיע הזמן, יאללה לצאת! 🚀"; stopCountdown(); return; }
+    var s = Math.floor(diff / 1000);
+    var days = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+    el.textContent = "";
+    el.appendChild(document.createTextNode("⏳ עוד "));
+    var b = document.createElement("b");
+    b.textContent = (days ? days + " ימים · " : "") + pad2(h) + ":" + pad2(m) + ":" + pad2(sec);
+    el.appendChild(b);
+    el.appendChild(document.createTextNode(" עד הישיבה"));
+  }
+  function startCountdown(){ stopCountdown(); tickCountdown(); countdownId = window.setInterval(tickCountdown, 1000); }
+  function stopCountdown(){ if(countdownId !== null){ window.clearInterval(countdownId); countdownId = null; } }
+
+  // ---------- whatsapp ----------
+  function buildMessage(){
+    var lines = [
+      "אח יקר! 🔥",
+      "סגרתי לנו את הלו\"ז הכי מדויק:",
+      "📅 תאריך: " + formatDateHe(state.date),
+      "⏰ שעה: " + state.time,
+      "📍 מה עושים: " + activityText()
+    ];
+    if(state.noPhones) lines.push("📵 בלי מסכים: הטלפונים בכיס כל הישיבה");
+    if(revealed) lines.push("🎰 מכרטיס הגירוד: " + prize);
+    lines.push("", "נתראה שם! 🚀");
+    return lines.join("\n");
+  }
+  function updateWhatsApp(){
+    $("waBtn").href = "https://wa.me/" + WHATSAPP_PHONE + "?text=" + encodeURIComponent(buildMessage());
+  }
+
+  $("editBtn").addEventListener("click", function(){ goTo("vibe", true); });
+  $("restartBtn").addEventListener("click", function(){
+    state = { date:"", time:"", vibe:"", sub:-1, noPhones:false };
+    dateInput.value = ""; timeInput.value = "";
+    $("noPhones").checked = false;
+    onWhenChange();
+    goTo("when", true);
+  });
+
+  // ---------- confetti ----------
+  var confettiRun = 0;
+  function confetti(){
+    var run = ++confettiRun;
+    var cv = $("confetti");
+    if(!cv){ cv = document.createElement("canvas"); cv.id = "confetti"; document.body.appendChild(cv); }
+    var c = cv.getContext("2d"), dpr = window.devicePixelRatio || 1;
+    var W = window.innerWidth, H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var colors = ["#C6FF3D", "#FF2E88", "#2EE6FF", "#9B5CFF", "#FFFFFF"];
+    var parts = [];
+    for(var i = 0; i < (reduce ? 20 : 110); i++){
+      parts.push({
+        x: Math.random() * W, y: -20 - Math.random() * H * 0.5,
+        w: 4 + Math.random() * 6, h: 8 + Math.random() * 10,
+        color: colors[i % colors.length],
+        rot: Math.random() * 6.28, vr: (Math.random() - .5) * .25,
+        vy: 2 + Math.random() * 3, vx: (Math.random() - .5) * 2
+      });
+    }
+    var start = null, DUR = reduce ? 1000 : 3200;
+    (function frame(ts){
+      if(run !== confettiRun) return;
+      if(!start) start = ts;
+      c.clearRect(0, 0, W, H);
+      parts.forEach(function(p){
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        c.save(); c.translate(p.x, p.y); c.rotate(p.rot);
+        c.fillStyle = p.color; c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        c.restore();
+      });
+      if(ts - start < DUR) window.requestAnimationFrame(frame); else c.clearRect(0, 0, W, H);
+    })(performance.now());
+  }
+
+  // ---------- init ----------
+  goTo("welcome");
+})();
+</script>
+</body>
+</html>
